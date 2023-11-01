@@ -15,36 +15,6 @@ export class AuthService {
     private jwtService: JwtService,
   ) {}
 
-  async register(createAuthDto: CreateAuthDto) {
-    const { user_name, firstname, email, password } = createAuthDto;
-
-    // hashage du mot de passe
-    const salt = await bcrypt.genSalt();
-    const hashedPassword = await bcrypt.hash(password, salt);
-
-    // création d'une entité user
-    const user = this.usersRepository.create({
-      user_name,
-      firstname,
-      email,
-      password: hashedPassword,
-    });
-
-    try {
-      // enregistrement de l'entité user
-      const createdUser = await this.usersRepository.save(user);
-      delete createdUser.password;
-      return createdUser;
-    } catch (error) {
-      // gestion des erreurs
-      if (error.code === '23505') {
-        throw new ConflictException('email already exists');
-      } else {
-        throw new InternalServerErrorException();
-      }
-    }
-  }
-
   async login(loginDto: LoginDto) {
     const { email, password } = loginDto;
     const user = await this.usersRepository.findOneBy({ email });

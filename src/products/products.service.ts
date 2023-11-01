@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -19,7 +19,20 @@ export class ProductsService {
   }
 
   findAll() {
-    return this.productsRepository.find();
+    try {
+      return this.productsRepository.find();
+    } catch (error) {
+     throw new HttpException(
+       {
+         status: HttpStatus.FORBIDDEN,
+         error: "L'accès n'est pas autorisé",
+       },
+       HttpStatus.FORBIDDEN,
+       {
+         cause: error,
+       },
+     );
+    } 
   }
 
   async findOne(product_id: number) {
@@ -45,5 +58,6 @@ export class ProductsService {
   async remove(product_id: number) {
    const product = await this.findOne(product_id);
    const response = await this.productsRepository.remove(product);
-   return response;  }
+    return response;
+  }
 }
